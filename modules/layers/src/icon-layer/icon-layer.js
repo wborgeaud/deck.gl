@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 import {Layer} from '@deck.gl/core';
 import GL from 'luma.gl/constants';
-import {Model, Geometry, Texture2D, fp64, loadImages} from 'luma.gl';
+import {Model, Geometry, Texture2D, fp64, loadImages, Framebuffer} from 'luma.gl';
 
 const {fp64LowPart} = fp64;
 
@@ -187,8 +187,9 @@ export default class IconLayer extends Layer {
               }
             });
           }
-
           this.setState({iconsTexture: texture});
+          const fb = toFramebuffer(texture);
+          fb.log();
         });
       }
     }
@@ -292,6 +293,23 @@ export default class IconLayer extends Layer {
       value[i++] = rect.height || 0;
     }
   }
+}
+// Wraps a given texture into a framebuffer object, that can be further used
+// to read data from the texture object.
+function toFramebuffer(texture, opts) {
+  const {gl, width, height, id} = texture;
+  const framebuffer = new Framebuffer(
+    gl,
+    Object.assign({}, opts, {
+      id: `framebuffer-for-${id}`,
+      width,
+      height,
+      attachments: {
+        [GL.COLOR_ATTACHMENT0]: texture
+      }
+    })
+  );
+  return framebuffer;
 }
 
 IconLayer.layerName = 'IconLayer';

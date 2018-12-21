@@ -20,6 +20,7 @@
 import {Layer} from '@deck.gl/core';
 import GL from 'luma.gl/constants';
 import {Model, Geometry, Texture2D, fp64, loadImages} from 'luma.gl';
+
 const {fp64LowPart} = fp64;
 
 import vs from './icon-layer-vertex.glsl';
@@ -156,33 +157,36 @@ export default class IconLayer extends Layer {
           canvas.width = 256;
           ctx.drawImage(data, 0, 0);
 
-          // 1. Construct texture with canvas
-          // const texture = new Texture2D(this.context.gl, {
-          //   id: 'texture-async-2',
-          //   pixels: canvas,
-          //   parameters: {
-          //     [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
-          //     [GL.TEXTURE_MAG_FILTER]: DEFAULT_TEXTURE_MAG_FILTER
-          //   }
-          // });
+          let texture = null;
+          if (props.id === 'icon-layer') {
+            // 1. Construct texture with canvas
+            texture = new Texture2D(this.context.gl, {
+              id: 'texture',
+              pixels: canvas,
+              parameters: {
+                [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
+                [GL.TEXTURE_MAG_FILTER]: DEFAULT_TEXTURE_MAG_FILTER
+              }
+            });
+          } else {
+            // 2. Construct empty texture and then call setImageData with canvas
+            texture = new Texture2D(this.context.gl, {
+              id: 'texture-async',
+              width: 256,
+              height: 128
+            });
 
-          // 2. Construct empty texture and then call setImageData with canvas
-          const texture = new Texture2D(this.context.gl, {
-            id: 'texture-async',
-            width: 256,
-            height: 128
-          });
-
-          texture.setImageData({
-            data: canvas,
-            width: 256,
-            height: 128,
-            parameters: {
-              [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
-              [GL.TEXTURE_MAG_FILTER]: DEFAULT_TEXTURE_MAG_FILTER,
-              [GL.UNPACK_FLIP_Y_WEBGL]: true
-            }
-          });
+            texture.setImageData({
+              data: canvas,
+              width: 256,
+              height: 128,
+              parameters: {
+                [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
+                [GL.TEXTURE_MAG_FILTER]: DEFAULT_TEXTURE_MAG_FILTER,
+                [GL.UNPACK_FLIP_Y_WEBGL]: true
+              }
+            });
+          }
 
           this.setState({iconsTexture: texture});
         });

@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 import {Layer} from '@deck.gl/core';
 import GL from 'luma.gl/constants';
-import {Model, Geometry, Texture2D, loadTextures, fp64} from 'luma.gl';
+import {Model, Geometry, Texture2D, fp64, loadImages} from 'luma.gl';
 const {fp64LowPart} = fp64;
 
 import vs from './icon-layer-vertex.glsl';
@@ -29,6 +29,8 @@ const DEFAULT_COLOR = [0, 0, 0, 255];
 const DEFAULT_TEXTURE_MIN_FILTER = GL.LINEAR_MIPMAP_LINEAR;
 // GL.LINEAR is the default value but explicitly set it here
 const DEFAULT_TEXTURE_MAG_FILTER = GL.LINEAR;
+
+/* global document */
 
 /*
  * @param {object} props
@@ -55,7 +57,7 @@ const DEFAULT_TEXTURE_MAG_FILTER = GL.LINEAR;
  */
 const defaultProps = {
   iconAtlas: null,
-  iconMapping: {type: 'object', value: {}, async: true},
+  iconMapping: null,
   sizeScale: {type: 'number', value: 1, min: 0},
   fp64: false,
 
@@ -74,7 +76,6 @@ export default class IconLayer extends Layer {
 
   initializeState() {
     const attributeManager = this.getAttributeManager();
-
     /* eslint-disable max-len */
     attributeManager.addInstanced({
       instancePositions: {
@@ -123,14 +124,14 @@ export default class IconLayer extends Layer {
 
     const {iconAtlas, iconMapping} = props;
 
-    if (oldProps.iconMapping !== iconMapping) {
+    if (iconMapping && oldProps.iconMapping !== iconMapping) {
       const attributeManager = this.getAttributeManager();
       attributeManager.invalidate('instanceOffsets');
       attributeManager.invalidate('instanceIconFrames');
       attributeManager.invalidate('instanceColorModes');
     }
 
-    if (oldProps.iconAtlas !== iconAtlas) {
+    if (iconAtlas && oldProps.iconAtlas !== iconAtlas) {
       if (iconAtlas instanceof Texture2D) {
         iconAtlas.setParameters({
           [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
@@ -138,13 +139,51 @@ export default class IconLayer extends Layer {
         });
         this.setState({iconsTexture: iconAtlas});
       } else if (typeof iconAtlas === 'string') {
-        loadTextures(this.context.gl, {
-          urls: [iconAtlas]
-        }).then(([texture]) => {
-          texture.setParameters({
-            [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
-            [GL.TEXTURE_MAG_FILTER]: DEFAULT_TEXTURE_MAG_FILTER
+        // loadTextures(this.context.gl, {
+        //   urls: [iconAtlas]
+        // }).then(([texture]) => {
+        //   texture.setParameters({
+        //     [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
+        //     [GL.TEXTURE_MAG_FILTER]: DEFAULT_TEXTURE_MAG_FILTER
+        //   });
+        //   this.setState({iconsTexture: texture});
+        // });
+
+        loadImages({urls: [iconAtlas]}).then(([data]) => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.height = 128;
+          canvas.width = 256;
+          ctx.drawImage(data, 0, 0);
+
+          // 1. Construct texture with canvas
+          // const texture = new Texture2D(this.context.gl, {
+          //   id: 'texture-async-2',
+          //   pixels: canvas,
+          //   parameters: {
+          //     [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
+          //     [GL.TEXTURE_MAG_FILTER]: DEFAULT_TEXTURE_MAG_FILTER
+          //   }
+          // });
+
+          // 2. Construct empty texture and then call setImageData with canvas
+          const texture = new Texture2D(this.context.gl, {
+            id: 'texture-async',
+            width: 256,
+            height: 128
           });
+
+          texture.setImageData({
+            data: canvas,
+            width: 256,
+            height: 128,
+            parameters: {
+              [GL.TEXTURE_MIN_FILTER]: DEFAULT_TEXTURE_MIN_FILTER,
+              [GL.TEXTURE_MAG_FILTER]: DEFAULT_TEXTURE_MAG_FILTER,
+              [GL.UNPACK_FLIP_Y_WEBGL]: true
+            }
+          });
+
           this.setState({iconsTexture: texture});
         });
       }
@@ -214,7 +253,7 @@ export default class IconLayer extends Layer {
   }
 
   calculateInstanceOffsets(attribute) {
-    const {data, iconMapping, getIcon} = this.props;
+    const {data, getIcon, iconMapping} = this.props;
     const {value} = attribute;
     let i = 0;
     for (const object of data) {
@@ -226,7 +265,7 @@ export default class IconLayer extends Layer {
   }
 
   calculateInstanceColorMode(attribute) {
-    const {data, iconMapping, getIcon} = this.props;
+    const {data, getIcon, iconMapping} = this.props;
     const {value} = attribute;
     let i = 0;
     for (const object of data) {
@@ -237,7 +276,7 @@ export default class IconLayer extends Layer {
   }
 
   calculateInstanceIconFrames(attribute) {
-    const {data, iconMapping, getIcon} = this.props;
+    const {data, getIcon, iconMapping} = this.props;
     const {value} = attribute;
     let i = 0;
     for (const object of data) {

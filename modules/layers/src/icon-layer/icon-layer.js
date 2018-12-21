@@ -186,6 +186,7 @@ export default class IconLayer extends Layer {
                 [GL.UNPACK_FLIP_Y_WEBGL]: true
               }
             });
+            texture.generateMipmap();
           }
           this.setState({iconsTexture: texture});
           const fb = toFramebuffer(texture);

@@ -3,7 +3,8 @@ import {
   PathOutlineLayer,
   PathMarkerLayer,
   AdvancedTextLayer,
-  GPUGridLayer
+  GPUGridLayer,
+  BitmapLayer
   // KMLLayer
 } from '@deck.gl/experimental-layers';
 
@@ -198,6 +199,15 @@ const GPUGridLayerPerfExample = (id, getData) => ({
   }
 });
 
+const BitmapLayerExample = {
+  layer: BitmapLayer,
+  props: {
+    id: 'bitmap-layer',
+    image: 'data/radar.gif',
+    bitmapBounds: [-71.516, 37.936, -80.425, 46.437]
+  }
+};
+
 /* eslint-disable quote-props */
 export default {
   'Experimental 3D Layers': {
@@ -211,6 +221,7 @@ export default {
   },
   'Experimental Core Layers': {
     AdvancedTextLayer: AdvancedTextLayerExample,
+    BitmapLayer: BitmapLayerExample,
     GPUGridLayer: GPUGridLayerExample,
     'GPUGridLayer (1M)': GPUGridLayerPerfExample('1M', dataSamples.getPoints1M),
     'GPUGridLayer (5M)': GPUGridLayerPerfExample('5M', dataSamples.getPoints5M)

@@ -103,15 +103,11 @@ export default class TextLayer extends CompositeLayer {
     // generate test characterSet
     const fontAtlasManager = this.state.fontAtlasManager;
     fontAtlasManager.setProps(
-      Object.assign(
-        {
-          characterSet,
-          fontFamily,
-          fontWeight
-        },
-        DEFAULT_FONT_SETTINGS,
-        fontSettings
-      )
+      Object.assign({}, DEFAULT_FONT_SETTINGS, fontSettings, {
+        characterSet,
+        fontFamily,
+        fontWeight
+      })
     );
 
     const {scale, texture, mapping} = fontAtlasManager;

@@ -190,9 +190,13 @@ export default class FontAtlasManager {
 
   _generateFontAtlas(key, characterSet, cachedFontAtlas) {
     const {fontFamily, fontWeight, fontSize, buffer, sdf, radius, cutoff} = this;
-    const oldCanvas = cachedFontAtlas && cachedFontAtlas.data;
-    const canvas = document.createElement('canvas');
+    let canvas = cachedFontAtlas && cachedFontAtlas.data;
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.width = MAX_CANVAS_WIDTH;
+    }
     const ctx = canvas.getContext('2d');
+
     setTextStyle(ctx, fontFamily, fontSize, fontWeight);
 
     // 1. build mapping
@@ -214,14 +218,13 @@ export default class FontAtlasManager {
     );
 
     // 2. update canvas
-    canvas.width = MAX_CANVAS_WIDTH;
-    canvas.height = canvasHeight;
-    setTextStyle(ctx, fontFamily, fontSize, fontWeight);
-
-    // copy old canvas to new canvas
-    if (oldCanvas) {
-      ctx.drawImage(oldCanvas, 0, 0, oldCanvas.width, oldCanvas.height);
+    // copy old canvas data to new canvas only when height changed
+    if (canvas.height !== canvasHeight) {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      canvas.height = canvasHeight;
+      ctx.putImageData(imageData, 0, 0);
     }
+    setTextStyle(ctx, fontFamily, fontSize, fontWeight);
 
     // 3. layout characters
     if (sdf) {

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import test from 'tape-catch';
 
-import {nextPowOfTwo, buildMapping} from '@deck.gl/layers/text-layer/util';
+import {nextPowOfTwo, buildMapping} from '@deck.gl/layers/text-layer/font-atlas-utils';
 
 test('TextLayer - utils#nextPowOfTwo', t => {
   const testCases = [0, 1, 2, 5];

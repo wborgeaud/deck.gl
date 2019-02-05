@@ -1,22 +1,19 @@
 import test from 'tape-catch';
 
-import Cache from '@deck.gl/layers/text-layer/cache';
+import LRUCache from '@deck.gl/layers/text-layer/lru-cache';
 
-test('TextLayer - Cache#Constructor', t => {
-  let cache = new Cache();
-  cache.clear();
+test('TextLayer - LRUCache#Constructor', t => {
+  let cache = new LRUCache();
 
   t.ok(cache.limit === 5, 'Should constructed with default limit.');
 
-  cache = new Cache(3);
+  cache = new LRUCache(3);
   t.ok(cache.limit === 3, 'Should constructed with given limit.');
   t.end();
 });
 
-test('TextLayer - Cache#clear', t => {
-  const cache = new Cache();
-
-  cache.clear();
+test('TextLayer - LRUCache#clear', t => {
+  const cache = new LRUCache();
 
   cache.set('key1', 'val1');
 
@@ -26,9 +23,8 @@ test('TextLayer - Cache#clear', t => {
   t.end();
 });
 
-test('TextLayer - Cache#set and get', t => {
-  const cache = new Cache(2);
-  cache.clear();
+test('TextLayer - LRUCache#set and get', t => {
+  const cache = new LRUCache(2);
 
   t.notOk(cache.get('key1'), 'Should be empty');
 
@@ -38,16 +34,15 @@ test('TextLayer - Cache#set and get', t => {
   t.ok(cache.get('key1') === 'val1', 'Should set correctly.');
 
   cache.set('key3', 'val3');
-  t.notOk(cache.get('key1'), 'Should delete the oldest one.');
-  t.ok(cache.get('key2') === 'val2', 'Should not be deleted.');
+  t.notOk(cache.get('key2'), 'Should delete the oldest one.');
+  t.ok(cache.get('key1') === 'val1', 'Should not be deleted.');
   t.ok(cache.get('key3') === 'val3', 'Should not be deleted.');
 
   t.end();
 });
 
-test('TextLayer - Cache#delete', t => {
-  const cache = new Cache(2);
-  cache.clear();
+test('TextLayer - LRUCache#delete', t => {
+  const cache = new LRUCache(2);
 
   cache.set('key1', 'val1');
   cache.set('key2', 'val2');

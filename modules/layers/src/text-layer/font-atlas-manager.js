@@ -1,10 +1,11 @@
 /* global document */
+
 import {Texture2D} from 'luma.gl';
 import TinySDF from '@mapbox/tiny-sdf';
 import GL from '@luma.gl/constants';
 
-import {buildMapping} from './util';
-import Cache from './cache';
+import {buildMapping} from './font-atlas-utils';
+import LRUCache from './lru-cache';
 
 function getDefaultCharacterSet() {
   const charSet = [];
@@ -44,7 +45,7 @@ const CACHE_LIMIT = 3;
  * }
  *
  */
-const cache = new Cache(CACHE_LIMIT);
+const cache = new LRUCache(CACHE_LIMIT);
 
 const VALID_PROPS = [
   'fontFamily',
@@ -254,10 +255,10 @@ export default class FontAtlasManager {
   }
 
   _getKey() {
-    const {fontFamily, fontWeight, fontSize, buffer, sdf, radius, cutoff} = this;
+    const {gl, fontFamily, fontWeight, fontSize, buffer, sdf, radius, cutoff} = this;
     if (sdf) {
-      return `${fontFamily} ${fontWeight} ${fontSize} ${buffer} ${radius} ${cutoff}`;
+      return `${gl} ${fontFamily} ${fontWeight} ${fontSize} ${buffer} ${radius} ${cutoff}`;
     }
-    return `${fontFamily} ${fontWeight} ${fontSize} ${buffer}`;
+    return `${gl} ${fontFamily} ${fontWeight} ${fontSize} ${buffer}`;
   }
 }

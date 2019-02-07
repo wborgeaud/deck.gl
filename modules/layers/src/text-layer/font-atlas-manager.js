@@ -106,16 +106,19 @@ function setTextStyle(ctx, fontFamily, fontSize, fontWeight) {
 export default class FontAtlasManager {
   constructor(gl) {
     this.gl = gl;
-    this.fontFamily = DEFAULT_FONT_FAMILY;
-    this.fontWeight = DEFAULT_FONT_WEIGHT;
-    this.characterSet = DEFAULT_CHAR_SET;
-    this.fontSize = DEFAULT_FONT_SIZE;
-    this.buffer = DEFAULT_BUFFER;
-    // sdf only props
-    // https://github.com/mapbox/tiny-sdf
-    this.sdf = false;
-    this.cutoff = DEFAULT_CUTOFF;
-    this.radius = DEFAULT_RADIUS;
+
+    this.options = {
+      fontFamily: DEFAULT_FONT_FAMILY,
+      fontWeight: DEFAULT_FONT_WEIGHT,
+      characterSet: DEFAULT_CHAR_SET,
+      fontSize: DEFAULT_FONT_SIZE,
+      buffer: DEFAULT_BUFFER,
+      // sdf only props
+      // https://github.com/mapbox/tiny-sdf
+      sdf: false,
+      cutoff: DEFAULT_CUTOFF,
+      radius: DEFAULT_RADIUS
+    };
 
     // key is used for caching generated fontAtlas
     this._key = null;
@@ -146,7 +149,7 @@ export default class FontAtlasManager {
     const oldKey = this._key;
     this._key = this._getKey();
 
-    const charSet = getNewChars(this._key, this.characterSet);
+    const charSet = getNewChars(this._key, this.options.characterSet);
     const cachedFontAtlas = cache.get(this._key);
 
     // if a fontAtlas associated with the new settings is cached and
@@ -255,7 +258,7 @@ export default class FontAtlasManager {
   }
 
   _getKey() {
-    const {gl, fontFamily, fontWeight, fontSize, buffer, sdf, radius, cutoff} = this;
+    const {gl, fontFamily, fontWeight, fontSize, buffer, sdf, radius, cutoff} = this.options;
     if (sdf) {
       return `${gl} ${fontFamily} ${fontWeight} ${fontSize} ${buffer} ${radius} ${cutoff}`;
     }

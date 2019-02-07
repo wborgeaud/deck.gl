@@ -1,9 +1,10 @@
 /**
  * LRU Cache class with limit
  *
- * Update timestamp for each get/set operation
+ * Update order for each get/set operation
  * Delete oldest when reach given limit
  */
+
 export default class LRUCache {
   constructor(limit = 5) {
     this.limit = limit;
@@ -13,66 +14,58 @@ export default class LRUCache {
 
   clear() {
     this._cache = {};
-
-    const head = this._getNode({key: `${this}._head`});
-    const tail = this._getNode({key: `${this}._tail`});
-    this._head = Object.assign(head, {next: tail});
-    this._tail = Object.assign(tail, tail, {prev: head});
+    // access/update order, first item is oldest, last item is newest
+    this._order = [];
   }
 
   get(key) {
-    const node = this._cache[key];
-    if (node) {
-      this.delete(key);
-      this._insertFront(key, node.value);
+    const value = this._cache[key];
+    if (value) {
+      // update order
+      this._deleteOrder(key);
+      this._appendOrder(key);
     }
-    return node && node.value;
+    return value;
   }
 
   set(key, value) {
     if (!this._cache[key]) {
       // if reach limit, delete the oldest
       if (Object.keys(this._cache).length === this.limit) {
-        this.delete(this._tail.prev.key);
+        this.delete(this._order[0]);
       }
-      this._insertFront(key, value);
+
+      this._cache[key] = value;
+      this._appendOrder(key);
     } else {
       // if found in cache, delete the old one, insert new one to the first of list
       this.delete(key);
-      this._insertFront(key, value);
+
+      this._cache[key] = value;
+      this._appendOrder(key);
     }
-  }
-
-  _getNode({key, value = null, prev = null, next = null}) {
-    return {
-      key,
-      value,
-      prev,
-      next
-    };
-  }
-
-  _insertFront(key, value) {
-    const node = this._getNode({
-      key,
-      value,
-      prev: this._head,
-      next: this._head.next
-    });
-
-    node.next.prev = node;
-    this._head.next = node;
-
-    this._cache[key] = node;
   }
 
   delete(key) {
-    const node = this._cache[key];
-    if (node) {
-      delete this._cache[key];
-
-      node.prev.next = node.next;
-      node.next.prev = node.prev;
+    const value = this._cache[key];
+    if (value) {
+      this._deleteCache(key);
+      this._deleteOrder(key);
     }
+  }
+
+  _deleteCache(key) {
+    delete this._cache[key];
+  }
+
+  _deleteOrder(key) {
+    const index = this._order.findIndex(o => o === key);
+    if (index >= 0) {
+      this._order.splice(index, 1);
+    }
+  }
+
+  _appendOrder(key) {
+    this._order.push(key);
   }
 }

@@ -19,8 +19,8 @@
 // THE SOFTWARE.
 
 import test from 'tape-catch';
-import EffectManager from '@deck.gl/core/experimental/lib/effect-manager';
-import Effect from '@deck.gl/core/experimental/lib/effect';
+import EffectManager from '@deck.gl/core/effects/effect-manager';
+import Effect from '@deck.gl/core/effects/effect';
 import LayerManager from '@deck.gl/core/lib/layer-manager';
 
 import {gl} from '@deck.gl/test-utils';

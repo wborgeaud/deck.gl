@@ -1,5 +1,5 @@
 import {PointLight as BasePointLight} from 'luma.gl';
-import Effect from '../experimental/lib/effect';
+import Effect from './effect';
 import {projectPosition} from '../shaderlib/project/project-functions';
 import {COORDINATE_SYSTEM} from '../lib';
 
